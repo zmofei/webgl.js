@@ -56,13 +56,13 @@
 
 	var _plane2 = _interopRequireDefault(_plane);
 
-	var _wall = __webpack_require__(6);
+	var _wall = __webpack_require__(7);
 
 	var _wall2 = _interopRequireDefault(_wall);
 
 	var _utility = __webpack_require__(5);
 
-	var _default = __webpack_require__(7);
+	var _default = __webpack_require__(8);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1382,151 +1382,46 @@
 
 	'use strict';
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
 	var _utility = __webpack_require__(5);
 
-	var _mat = __webpack_require__(2);
+	var _obj = __webpack_require__(6);
+
+	var _obj2 = _interopRequireDefault(_obj);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Plane = function () {
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Plane = function (_Obj3D) {
+	    _inherits(Plane, _Obj3D);
+
 	    function Plane(GL, obj) {
 	        _classCallCheck(this, Plane);
 
-	        this.GL = GL;
-	        this.gl = GL.gl;
-	        this.obj = obj = obj || {};
-	        this.width = obj.width || 10.0;
-	        this.height = obj.height || 10.0;
-	        this.operate = [];
-	        this.opearteID = 0;
-	        this.opearteBuild = {};
-	        var color = this.color = (0, _utility.colorTransform)(obj.color);
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Plane).call(this));
 
-	        this.verticesColors = new Float32Array([-this.width / 2, +this.height / 2, 0.0, color[0], color[1], color[2], +this.width / 2, +this.height / 2, 0.0, color[0], color[1], color[2], +this.width / 2, -this.height / 2, 0.0, color[0], color[1], color[2], -this.width / 2, -this.height / 2, 0.0, color[0], color[1], color[2]]);
+	        _this.GL = GL;
+	        _this.gl = GL.gl;
+	        _this.obj = obj = obj || {};
+	        _this.width = obj.width || 10.0;
+	        _this.height = obj.height || 10.0;
 
-	        this.indices = new Uint8Array([0, 1, 2, 0, 2, 3]);
+	        var color = (0, _utility.colorTransform)(obj.color);
+	        _this.verticesColors = new Float32Array([-_this.width / 2, +_this.height / 2, 0.0, color[0], color[1], color[2], +_this.width / 2, +_this.height / 2, 0.0, color[0], color[1], color[2], +_this.width / 2, -_this.height / 2, 0.0, color[0], color[1], color[2], -_this.width / 2, -_this.height / 2, 0.0, color[0], color[1], color[2]]);
+	        _this.indices = new Uint8Array([0, 1, 2, 0, 2, 3]);
+	        return _this;
 	    }
 
-	    _createClass(Plane, [{
-	        key: 'translate',
-	        value: function translate(x, y, z) {
-	            var id = this.opearteID = this.opearteID;
-	            this.operate.push({
-	                id: id++,
-	                name: 'translate',
-	                value: [x || 0, y || 0, z || 0]
-	            });
-	            return this;
-	        }
-	    }, {
-	        key: 'rotate',
-	        value: function rotate(rad, axis) {
-	            var _axis = null;
-	            if (axis instanceof Array && axis.length == 3) {
-	                _axis = axis;
-	            } else {
-	                switch (axis) {
-	                    case 'x':
-	                        _axis = [1, 0, 0];
-	                        break;
-	                    case 'y':
-	                        _axis = [0, 1, 0];
-	                        break;
-	                    case 'z':
-	                        _axis = [0, 0, 1];
-	                        break;
-	                }
-	            }
-
-	            if (_axis) {
-	                var id = this.opearteID = this.opearteID;
-	                this.operate.push({
-	                    id: id++,
-	                    name: 'rotate',
-	                    value: [rad, _axis]
-	                });
-	            }
-	            return this;
-	        }
-	    }, {
-	        key: 'scale',
-	        value: function scale(x, y, z) {
-	            var id = this.opearteID = this.opearteID;
-	            this.operate.push({
-	                id: id++,
-	                name: 'scale',
-	                value: [x || 1, y || 1, z || 1]
-	            });
-	            return this;
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            var gl = this.gl;
-	            var mvMatrix = this.GL.camera.mvMatrix;
-
-	            // 顶点/颜色缓冲区操作
-	            var vertexColorBuffer = gl.createBuffer();
-	            var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
-	            gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
-	            gl.bufferData(gl.ARRAY_BUFFER, this.verticesColors, gl.STATIC_DRAW);
-	            gl.vertexAttribPointer(gl.aPosition, 3, gl.FLOAT, false, FSIZE * 6, 0);
-	            gl.enableVertexAttribArray(gl.aPosition);
-	            gl.vertexAttribPointer(gl.aColor, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
-	            gl.enableVertexAttribArray(gl.aColor);
-
-	            // 顶点索引缓冲区
-	            var indexBuffer = gl.createBuffer();
-	            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-	            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
-
-	            // set mv
-	            if (this.opearteBuild.ID === this.opearteID && this.opearteBuild.start === mvMatrix.toString()) {
-	                // for cache , in no new opearte just return the old mvMatrix
-	                mvMatrix = this.opearteBuild.result;
-	            } else {
-	                var start = mvMatrix.toString();
-	                for (var i in this.operate) {
-	                    var type = this.operate[i].name;
-	                    var value = this.operate[i].value;
-	                    switch (type) {
-	                        case 'translate':
-	                            var mvNMatrix = _mat.mat4.create();
-	                            _mat.mat4.translate(mvNMatrix, mvMatrix, value);
-	                            mvMatrix = mvNMatrix;
-	                            break;
-	                        case 'rotate':
-	                            var mvNMatrix = _mat.mat4.create();
-	                            _mat.mat4.rotate(mvNMatrix, mvMatrix, value[0], value[1]);
-	                            mvMatrix = mvNMatrix;
-	                            break;
-	                        case 'scale':
-	                            var mvNMatrix = _mat.mat4.create();
-	                            _mat.mat4.scale(mvNMatrix, mvMatrix, value);
-	                            mvMatrix = mvNMatrix;
-	                            break;
-	                    }
-	                }
-	                this.opearteBuild = {
-	                    ID: this.opearteID,
-	                    result: mvMatrix,
-	                    start: start
-	                };
-	            }
-
-	            gl.uniformMatrix4fv(this.gl.uMVMatrix, false, mvMatrix);
-	            gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_BYTE, 0);
-	        }
-	    }]);
-
 	    return Plane;
-	}();
+	}(_obj2.default);
 
 	exports.default = Plane;
 
@@ -1676,43 +1571,72 @@
 	    value: true
 	});
 
-	var _utility = __webpack_require__(5);
-
 	var _mat = __webpack_require__(2);
-
-	var _mat2 = _interopRequireDefault(_mat);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Wall = function () {
-	    function Wall(GL, obj) {
-	        _classCallCheck(this, Wall);
+	var Obj3D = function () {
+	    function Obj3D() {
+	        _classCallCheck(this, Obj3D);
 
-	        console.log(obj.path);
-	        this.GL = GL;
-	        this.gl = GL.gl;
-	        this.obj = obj = obj || {};
-	        this.width = obj.thickness || 0.20;
-	        this.height = obj.height || 3.0;
-
-	        this.operate = [];
 	        this.opearteID = 0;
+	        this.operate = [];
 	        this.opearteBuild = {};
-	        var color = this.color = (0, _utility.colorTransform)(obj.color);
-
-	        this.verticesColors = new Float32Array([-this.width / 2, +this.height / 2, 0.10, color[0], color[1], color[2], +this.width / 2, +this.height / 2, 0.10, color[0], color[1], color[2], +this.width / 2, -this.height / 2, 0.10, color[0], color[1], color[2], -this.width / 2, -this.height / 2, 0.10, color[0], color[1], color[2]]);
-
-	        this.indices = new Uint8Array([0, 1, 2, 0, 2, 3]);
-
-	        for (var i = 0; i < obj.path.length; i += 2) {
-	            if (i === 0) {}
-	            console.log(i);
-	        }
 	    }
 
-	    _createClass(Wall, [{
+	    _createClass(Obj3D, [{
+	        key: 'translate',
+	        value: function translate(x, y, z) {
+	            var id = this.opearteID = this.opearteID;
+	            this.operate.push({
+	                id: id++,
+	                name: 'translate',
+	                value: [x || 0, y || 0, z || 0]
+	            });
+	            return this;
+	        }
+	    }, {
+	        key: 'rotate',
+	        value: function rotate(rad, axis) {
+	            var _axis = null;
+	            if (axis instanceof Array && axis.length == 3) {
+	                _axis = axis;
+	            } else {
+	                switch (axis) {
+	                    case 'x':
+	                        _axis = [1, 0, 0];
+	                        break;
+	                    case 'y':
+	                        _axis = [0, 1, 0];
+	                        break;
+	                    case 'z':
+	                        _axis = [0, 0, 1];
+	                        break;
+	                }
+	            }
+
+	            if (_axis) {
+	                var id = this.opearteID = this.opearteID;
+	                this.operate.push({
+	                    id: id++,
+	                    name: 'rotate',
+	                    value: [rad, _axis]
+	                });
+	            }
+	            return this;
+	        }
+	    }, {
+	        key: 'scale',
+	        value: function scale(x, y, z) {
+	            var id = this.opearteID = this.opearteID;
+	            this.operate.push({
+	                id: id++,
+	                name: 'scale',
+	                value: [x || 1, y || 1, z || 1]
+	            });
+	            return this;
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var gl = this.gl;
@@ -1733,19 +1657,105 @@
 	            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 	            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
 
-	            gl.uniformMatrix4fv(this.gl.uMVMatrix, false, mvMatrix);
+	            // set mv
+	            if (this.opearteBuild.ID === this.opearteID && this.opearteBuild.start === mvMatrix.toString()) {
+	                // for cache , in no new opearte just return the old mvMatrix
+	                mvMatrix = this.opearteBuild.result;
+	            } else {
+	                var start = mvMatrix.toString();
+	                for (var i in this.operate) {
+	                    var type = this.operate[i].name;
+	                    var value = this.operate[i].value;
+	                    switch (type) {
+	                        case 'translate':
+	                            var mvNMatrix = _mat.mat4.create();
+	                            _mat.mat4.translate(mvNMatrix, mvMatrix, value);
+	                            mvMatrix = mvNMatrix;
+	                            break;
+	                        case 'rotate':
+	                            var mvNMatrix = _mat.mat4.create();
+	                            _mat.mat4.rotate(mvNMatrix, mvMatrix, value[0], value[1]);
+	                            mvMatrix = mvNMatrix;
+	                            break;
+	                        case 'scale':
+	                            var mvNMatrix = _mat.mat4.create();
+	                            _mat.mat4.scale(mvNMatrix, mvMatrix, value);
+	                            mvMatrix = mvNMatrix;
+	                            break;
+	                    }
+	                }
+	                this.opearteBuild = {
+	                    ID: this.opearteID,
+	                    result: mvMatrix,
+	                    start: start
+	                };
+	            }
 
+	            gl.uniformMatrix4fv(this.gl.uMVMatrix, false, mvMatrix);
 	            gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_BYTE, 0);
 	        }
 	    }]);
 
-	    return Wall;
+	    return Obj3D;
 	}();
+
+	exports.default = Obj3D;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _utility = __webpack_require__(5);
+
+	var _obj = __webpack_require__(6);
+
+	var _obj2 = _interopRequireDefault(_obj);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Wall = function (_Obj3D) {
+	    _inherits(Wall, _Obj3D);
+
+	    function Wall(GL, obj) {
+	        _classCallCheck(this, Wall);
+
+	        console.log(obj.path);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Wall).call(this));
+
+	        _this.GL = GL;
+	        _this.gl = GL.gl;
+	        _this.obj = obj = obj || {};
+	        _this.width = obj.thickness || 0.20;
+	        _this.height = obj.height || 3.0;
+
+	        var color = (0, _utility.colorTransform)(obj.color);
+
+	        _this.verticesColors = new Float32Array([-_this.width / 2, +_this.height / 2, 0.10, color[0], color[1], color[2], +_this.width / 2, +_this.height / 2, 0.10, color[0], color[1], color[2], +_this.width / 2, -_this.height / 2, 0.10, color[0], color[1], color[2], -_this.width / 2, -_this.height / 2, 0.10, color[0], color[1], color[2]]);
+
+	        _this.indices = new Uint8Array([0, 1, 2, 0, 2, 3]);
+	        return _this;
+	    }
+
+	    return Wall;
+	}(_obj2.default);
 
 	exports.default = Wall;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	'use strict';

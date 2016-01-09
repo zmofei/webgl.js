@@ -1,5 +1,6 @@
 import { mat4 } from './tools/mat4.js';
 
+
 class Camera {
     constructor(gl) {
         this.gl = gl;
