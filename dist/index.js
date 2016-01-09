@@ -1458,14 +1458,11 @@
 
 	            // 顶点/颜色缓冲区操作
 	            var vertexColorBuffer = gl.createBuffer();
+	            var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
 	            gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
 	            gl.bufferData(gl.ARRAY_BUFFER, this.verticesColors, gl.STATIC_DRAW);
-	            //
-	            var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
-	            //
 	            gl.vertexAttribPointer(gl.aPosition, 3, gl.FLOAT, false, FSIZE * 6, 0);
 	            gl.enableVertexAttribArray(gl.aPosition);
-	            //
 	            gl.vertexAttribPointer(gl.aColor, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
 	            gl.enableVertexAttribArray(gl.aColor);
 
@@ -1476,6 +1473,7 @@
 
 	            // set mv
 	            if (this.opearteBuild.ID === this.opearteID && this.opearteBuild.start === mvMatrix.toString()) {
+	                // for cache , in no new opearte just return the old mvMatrix
 	                mvMatrix = this.opearteBuild.result;
 	            } else {
 	                var start = mvMatrix.toString();
@@ -1528,7 +1526,6 @@
 	});
 	//get the context
 	function getWebGLContext(canvas, err) {
-	    // console.log(canvas)
 	    // bind err
 	    if (canvas.addEventListener) {
 	        canvas.addEventListener("webglcontextcreationerror", function (event) {
@@ -1541,13 +1538,11 @@
 	    for (var ii = 0; ii < names.length; ++ii) {
 	        try {
 	            context = canvas.getContext(names[ii], err);
-	            console.log(names[ii], context);
 	        } catch (e) {}
 	        if (context) {
 	            break;
 	        }
 	    }
-	    console.log(context);
 	    return context;
 	};
 
@@ -1572,7 +1567,6 @@
 
 	//create program
 	function createProgram(gl, vshader, fshader) {
-	    console.log('create');
 	    // Create shader object
 	    var vertexShader = loadShader(gl, gl.VERTEX_SHADER, vshader);
 	    var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fshader);
@@ -1671,6 +1665,10 @@
 
 	var _mat = __webpack_require__(2);
 
+	var _mat2 = _interopRequireDefault(_mat);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Wall = function () {
@@ -1707,14 +1705,11 @@
 
 	            // 顶点/颜色缓冲区操作
 	            var vertexColorBuffer = gl.createBuffer();
+	            var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
 	            gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
 	            gl.bufferData(gl.ARRAY_BUFFER, this.verticesColors, gl.STATIC_DRAW);
-	            //
-	            var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
-	            //
 	            gl.vertexAttribPointer(gl.aPosition, 3, gl.FLOAT, false, FSIZE * 6, 0);
 	            gl.enableVertexAttribArray(gl.aPosition);
-	            //
 	            gl.vertexAttribPointer(gl.aColor, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
 	            gl.enableVertexAttribArray(gl.aColor);
 

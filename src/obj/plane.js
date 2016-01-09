@@ -1,12 +1,7 @@
-import {
-    colorTransform
-}
-from '../tools/utility'
-
-import {mat4} from '../tools/mat4.js';
+import { colorTransform } from '../tools/utility'
+import { mat4 } from '../tools/mat4.js';
 
 class Plane {
-
     constructor(GL, obj) {
         this.GL = GL;
         this.gl = GL.gl;
@@ -80,14 +75,11 @@ class Plane {
 
         // 顶点/颜色缓冲区操作
         var vertexColorBuffer = gl.createBuffer();
+        var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexColorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, this.verticesColors, gl.STATIC_DRAW);
-        //
-        var FSIZE = this.verticesColors.BYTES_PER_ELEMENT;
-        //
         gl.vertexAttribPointer(gl.aPosition, 3, gl.FLOAT, false, FSIZE * 6, 0);
         gl.enableVertexAttribArray(gl.aPosition);
-        //
         gl.vertexAttribPointer(gl.aColor, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
         gl.enableVertexAttribArray(gl.aColor);
 
@@ -98,6 +90,7 @@ class Plane {
 
         // set mv
         if (this.opearteBuild.ID === this.opearteID && this.opearteBuild.start === mvMatrix.toString()) {
+            // for cache , in no new opearte just return the old mvMatrix
             mvMatrix = this.opearteBuild.result
         } else {
             var start = mvMatrix.toString();
@@ -123,10 +116,10 @@ class Plane {
                 }
             }
             this.opearteBuild = {
-                    ID: this.opearteID,
-                    result: mvMatrix,
-                    start: start,
-                }
+                ID: this.opearteID,
+                result: mvMatrix,
+                start: start,
+            }
         }
 
         gl.uniformMatrix4fv(this.gl.uMVMatrix, false, mvMatrix);

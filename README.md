@@ -5,7 +5,7 @@ another webgl library
 
 1. git clone `git@github.com:zmofei/webgl.js.git`
 - cd webgl.js
-- npm install -g `webpack` && npm inistall
+- npm install -g `webpack` && npm install
 - <del> bower install </del>
 - npm run build
 - open new terminal window

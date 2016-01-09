@@ -1,6 +1,5 @@
 //get the context
 function getWebGLContext(canvas, err) {
-    // console.log(canvas)
     // bind err
     if (canvas.addEventListener) {
         canvas.addEventListener("webglcontextcreationerror", function(event) {
@@ -13,13 +12,11 @@ function getWebGLContext(canvas, err) {
     for (var ii = 0; ii < names.length; ++ii) {
         try {
             context = canvas.getContext(names[ii], err);
-            console.log(names[ii], context)
         } catch (e) {}
         if (context) {
             break;
         }
     }
-    console.log(context)
     return context;
 };
 
@@ -44,8 +41,7 @@ function initShaders(gl, vshader, fshader) {
 
 //create program
 function createProgram(gl, vshader, fshader) {
-    console.log('create')
-        // Create shader object
+    // Create shader object
     var vertexShader = loadShader(gl, gl.VERTEX_SHADER, vshader);
     var fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fshader);
     if (!vertexShader || !fragmentShader) {
