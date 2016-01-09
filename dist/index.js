@@ -127,89 +127,104 @@
 
 	'use strict';
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
 	var _mat = __webpack_require__(2);
 
-	var Camera = function Camera(gl) {
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	    this.gl = gl;
-	    this.radius = 30;
+	var Camera = function () {
+	    function Camera(gl) {
+	        _classCallCheck(this, Camera);
 
-	    this.lon = 90;
-	    this.lat = 45;
+	        this.gl = gl;
+	        this.radius = 30;
 
-	    var canvas = gl.canvas;
+	        this.lon = 90;
+	        this.lat = 45;
 
-	    gl.viewport(0, 0, canvas.width, canvas.height);
-	    var pMatrix = _mat.mat4.create();
-	    _mat.mat4.perspective(pMatrix, 45, canvas.width / canvas.height, 1, 1000.0);
-	    gl.uniformMatrix4fv(gl.uPMatrix, false, pMatrix);
+	        var canvas = gl.canvas;
 
-	    this.computerXYZ();
-	    this.render();
-	    this.init();
-	};
+	        gl.viewport(0, 0, canvas.width, canvas.height);
+	        var pMatrix = _mat.mat4.create();
+	        _mat.mat4.perspective(pMatrix, 45, canvas.width / canvas.height, 1, 1000.0);
+	        gl.uniformMatrix4fv(gl.uPMatrix, false, pMatrix);
 
-	Camera.prototype.init = function () {
-	    this.drag();
-	};
+	        this.computerXYZ();
+	        this.render();
+	        this.init();
+	    }
 
-	Camera.prototype.render = function () {
-	    var mvMatrix = _mat.mat4.create();
-	    _mat.mat4.lookAt(mvMatrix, [this.x, this.y, this.z], [0, 0, 0], [0, 0, 1]);
-	    this.mvMatrix = mvMatrix;
-	};
-
-	Camera.prototype.drag = function () {
-	    var self = this;
-	    var canvas = this.gl.canvas;
-
-	    var startX = 0;
-	    var startY = 0;
-	    var startLon = 0;
-	    var startLat = 0;
-	    var canDrag = false;
-
-	    canvas.addEventListener('mousedown', function (e) {
-	        startX = e.offsetX;
-	        startY = e.offsetY;
-	        startLon = self.lon;
-	        startLat = self.lat;
-	        canDrag = true;
-	    });
-
-	    window.addEventListener('mousemove', function (e) {
-	        if (canDrag) {
-	            var dX = e.offsetX - startX;
-	            var dY = e.offsetY - startY;
-	            var dLon = dX / 1;
-	            var dLat = dY / 1;
-	            self.lon = (startLon + dLon) % 360;
-	            self.lat = startLat + dLat;
-	            self.lat = self.lat > 90 ? 90 : self.lat;
-	            self.lat = self.lat < -90 ? -90 : self.lat;
-	            self.computerXYZ();
-	            self.render();
+	    _createClass(Camera, [{
+	        key: 'init',
+	        value: function init() {
+	            this.drag();
 	        }
-	    });
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var mvMatrix = _mat.mat4.create();
+	            _mat.mat4.lookAt(mvMatrix, [this.x, this.y, this.z], [0, 0, 0], [0, 0, 1]);
+	            this.mvMatrix = mvMatrix;
+	        }
+	    }, {
+	        key: 'drag',
+	        value: function drag() {
+	            var self = this;
+	            var canvas = this.gl.canvas;
 
-	    window.addEventListener('mouseup', function (e) {
-	        startX = 0;
-	        startY = 0;
-	        canDrag = false;
-	    });
-	};
+	            var startX = 0;
+	            var startY = 0;
+	            var startLon = 0;
+	            var startLat = 0;
+	            var canDrag = false;
 
-	Camera.prototype.computerXYZ = function () {
-	    var self = this;
-	    self.z = self.radius * Math.sin(self.lat * Math.PI / 180);
-	    var smallRadius = self.radius * Math.cos(self.lat * Math.PI / 180);
-	    self.x = smallRadius * Math.cos(self.lon * Math.PI / 180);
-	    self.y = -smallRadius * Math.sin(self.lon * Math.PI / 180);
-	};
+	            canvas.addEventListener('mousedown', function (e) {
+	                startX = e.offsetX;
+	                startY = e.offsetY;
+	                startLon = self.lon;
+	                startLat = self.lat;
+	                canDrag = true;
+	            });
+
+	            window.addEventListener('mousemove', function (e) {
+	                if (canDrag) {
+	                    var dX = e.offsetX - startX;
+	                    var dY = e.offsetY - startY;
+	                    var dLon = dX / 1;
+	                    var dLat = dY / 1;
+	                    self.lon = (startLon + dLon) % 360;
+	                    self.lat = startLat + dLat;
+	                    self.lat = self.lat > 90 ? 90 : self.lat;
+	                    self.lat = self.lat < -90 ? -90 : self.lat;
+	                    self.computerXYZ();
+	                    self.render();
+	                }
+	            });
+
+	            window.addEventListener('mouseup', function (e) {
+	                startX = 0;
+	                startY = 0;
+	                canDrag = false;
+	            });
+	        }
+	    }, {
+	        key: 'computerXYZ',
+	        value: function computerXYZ() {
+	            var self = this;
+	            self.z = self.radius * Math.sin(self.lat * Math.PI / 180);
+	            var smallRadius = self.radius * Math.cos(self.lat * Math.PI / 180);
+	            self.x = smallRadius * Math.cos(self.lon * Math.PI / 180);
+	            self.y = -smallRadius * Math.sin(self.lon * Math.PI / 180);
+	        }
+	    }]);
+
+	    return Camera;
+	}();
 
 	exports.default = Camera;
 
