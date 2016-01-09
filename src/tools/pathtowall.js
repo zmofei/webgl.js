@@ -4,242 +4,166 @@
  * @author Mofei Zhu <hello@zhuwenlong.com>
  **/
 
-var canvas = document.getElementById('webgl');
-var ctx = canvas.getContext('2d');
+function pathExtend(paths, width) {
+    var width = width || 40;
+    var harfWidth = width / 2;
+    var quarterWidth = harfWidth / 2;
 
-// var canvas = document.getElementById('webgl2');
-// var ctx2 = canvas.getContext('2d');
-
-console.time('start')
-    // product path by random
-var paths = [];
-for (var i = 0; i < 10; i++) {
-    paths.push([Math.random() * 500 | 0, Math.random() * 500 | 0])
-}
-
-// var paths = [
-//     [300, 300],
-//     [30, 100],
-//     [30, 600],
-//     [300, 30],
-//     [400, 30],
-//     [500, 30],
-//     [500, 130],
-//     [500, 230],
-//     [600, 330],
-//     [700, 430]
-// ]
-var paths = [
-    [300, 300],
-    [300, 600],
-    [600, 600],
-    [600, 400],
-    [270, 400],
-]
-
-
-// the line's width
-var width = 40;
-var harfWidth = width / 2;
-var quarterWidth = harfWidth / 2;
-
-/**
- * step 2
- * judeg the new segment is cross the old line
- **/
-var newPoint = [];
-for (var i = 0; i < paths.length; i++) {
-    if (i >= 3) {
-        // judeg cross
-        var headSegment = [paths[i - 1], paths[i]];
-        for (var j = 1; j <= i - 2; j++) {
-            var oldSegment = [paths[j - 1], paths[j]];
-            var iC = isCross(headSegment, oldSegment, true);
-            if (iC) {
-                var point = [iC.x, iC.y];
-                newPoint[i] = newPoint[i] || [];
-                newPoint[i].push(point);
-                newPoint[j] = newPoint[j] || [];
-                newPoint[j].push(point);
+    /**
+     * judeg the new segment is cross the old line
+     **/
+    var newPoint = [];
+    for (var i = 0; i < paths.length; i++) {
+        if (i >= 3) {
+            // judeg cross
+            var headSegment = [paths[i - 1], paths[i]];
+            for (var j = 1; j <= i - 2; j++) {
+                var oldSegment = [paths[j - 1], paths[j]];
+                var iC = isCross(headSegment, oldSegment, true);
+                if (iC) {
+                    var point = [iC.x, iC.y];
+                    newPoint[i] = newPoint[i] || [];
+                    newPoint[i].push(point);
+                    newPoint[j] = newPoint[j] || [];
+                    newPoint[j].push(point);
+                }
             }
         }
     }
-}
 
 
-/**
- * step 3 insert the point to the path
- */
-for (var i = newPoint.length - 1; i >= 0; i--) {
-    if (newPoint[i] && newPoint[i].length >= 2) {
-        var newOrder = sortPoint(paths[i - 1], newPoint[i]);
-        newPoint[i] = newOrder;
-    }
-
-    if (newPoint[i]) {
-        for (var j in newPoint[i]) {
-            paths.splice(i, 0, newPoint[i][j])
-        }
-    }
-}
-
-console.timeEnd('start');
-
-// get all the cross point
-var crossPoint = {};
-for (var i = 0; i < paths.length; i++) {
-    var x = paths[i][0];
-    var y = paths[i][1];
-    var key = x + '|' + y;
-
-    crossPoint[key] = crossPoint[key] || [];
-    if (paths[i - 1]) {
-        crossPoint[key].push([paths[i - 1][0], paths[i - 1][1]])
-    };
-    if (paths[i + 1]) {
-        paths[i + 1] && crossPoint[key].push([paths[i + 1][0], paths[i + 1][1]]);
-    }
-}
-
-var cross = {};
-// if the road is X way (two ways cross and the cross point is not on the end of each way) 
-for (var i in crossPoint) {
-    if (crossPoint[i].length !== 4) {
-        continue;
-    }
-
-    cross[i] = cross[i] || [];
-
-    var startPoint = crossPoint[i][0];
-    var thisPoint = [Number(i.split('|')[0]), Number(i.split('|')[1])];
-    var nextPoint = crossPoint[i][2];
-    var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint);
-    cross[i].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
-    cross[i].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
-
-    var startPoint = crossPoint[i][0];
-    var thisPoint = [Number(i.split('|')[0]), Number(i.split('|')[1])];
-    var nextPoint = crossPoint[i][3];
-    var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint);
-    cross[i].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
-    cross[i].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
-}
-
-// deal with every cross (X,T,L);
-var isLoop = (paths[0][0] == paths[paths.length - 1][0] && paths[0][1] == paths[paths.length - 1][1]);
-for (var i = 0; i < paths.length; i++) {
-    if (isLoop && paths.length - 1 == i) {
-        continue;
-    }
-    // break
-    var startPoint = paths[i - 1] ? paths[i - 1] : (isLoop ? paths[paths.length - 2] : paths[i]);
-    var thisPoint = paths[i];
-    var nextPoint = paths[i + 1] ? paths[i + 1] : (isLoop ? paths[1] : paths[i]);
-
-    var key = paths[i][0] + '|' + paths[i][1];
-    if (crossPoint[key].length == 4) {
-        continue;
-    }
-    cross[key] = cross[key] || [];
-
-    var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint);
-
-    cross[key].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
-    cross[key].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
-    console.log(i, startPoint, thisPoint, nextPoint, '????', vectorys, cross[key])
-}
-
-console.log('cross2', cross)
-
-// get the outline path
-var outlines = [];
-for (var i = 0; i < paths.length - 1; i++) {
-    /*
-        v3 -------  v2
-        v4 |         | v1
-             |         |
-        v5 -------  v6
+    /**
+     * insert the point to the path
      */
-    var v1, v2, v3, v4, v5, v6;
+    for (var i = newPoint.length - 1; i >= 0; i--) {
+        if (newPoint[i] && newPoint[i].length >= 2) {
+            var newOrder = sortPoint(paths[i - 1], newPoint[i]);
+            newPoint[i] = newOrder;
+        }
 
-    var key = paths[i][0] + '|' + paths[i][1];
-    var keyNext = paths[i + 1][0] + '|' + paths[i + 1][1];
-    console.log(paths)
-    v1 = paths[i];
-    v4 = paths[i + 1];
-    // console.log('v2', v2)
-    // console.log('v6', v6/)
-    // console.log('@@@',cross[key])
-    if (cross[key].length == 4) {
-        var v1PointssortByV4 = sortPoint(v4, [cross[key][0], cross[key][1], cross[key][2], cross[key][3]]);
-        v2 = v1PointssortByV4[2]
-        v6 = v1PointssortByV4[3]
-    } else {
-        v2 = cross[key][0];
-        v6 = cross[key][1];
-    }
-    // console.warn('######', cross[keyNext][0], cross[keyNext][1])
-    if (cross[keyNext].length == 4) {
-        var v4PointssortByV1 = sortPoint(v1, [cross[keyNext][0], cross[keyNext][1], cross[keyNext][2], cross[keyNext][3]]);
-        v3 = v4PointssortByV1[2]
-        v5 = v4PointssortByV1[3]
-    } else {
-        v3 = cross[keyNext][0];
-        v5 = cross[keyNext][1];
-    }
-
-    if (isCross([v3, v2], [v5, v6])) {
-        var temp = v5;
-        v5 = v3;
-        v3 = temp
-    }
-
-    _outlines = [];
-    _outlines.push(v1, v2, v3, v4, v5, v6);
-    _outlines = _outlines.map(function(item) {
-        return item.map(function(si) {
-            return si.toFixed(2);
-        })
-    });
-    outlines.push(_outlines);
-    console.log('index:', i, _outlines[0], _outlines[1], _outlines[2], _outlines[3], _outlines[4], _outlines[5]);
-    // break;
-}
-// console.log('outlines:', outlines)
-
-// for (var i = outlines.length-1; i < outlines.length; i++) {
-for (var i = 0; i < outlines.length; i++) {
-    ctx.beginPath();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#f00';
-    ctx.moveTo(outlines[i][0][0], outlines[i][0][1]);
-    for (var j = 1; j < outlines[i].length; j++) {
-        if (j == 2 || j == 5) {
-            ctx.moveTo(outlines[i][j][0], outlines[i][j][1]);
-        } else {
-            ctx.lineTo(outlines[i][j][0], outlines[i][j][1]);
+        if (newPoint[i]) {
+            for (var j in newPoint[i]) {
+                paths.splice(i, 0, newPoint[i][j])
+            }
         }
     }
-    ctx.moveTo(outlines[i][5][0], outlines[i][5][1]);
-    ctx.lineTo(outlines[i][0][0], outlines[i][0][1]);
-    ctx.closePath();
-    ctx.stroke();
 
-    ctx.beginPath();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'grey';
+    // get all the cross point
+    var crossPoint = {};
+    for (var i = 0; i < paths.length; i++) {
+        var x = paths[i][0];
+        var y = paths[i][1];
+        var key = x + '|' + y;
 
-    ctx.moveTo(outlines[i][1][0], outlines[i][1][1]);
-    ctx.lineTo(outlines[i][2][0], outlines[i][2][1]);
-    ctx.moveTo(outlines[i][4][0], outlines[i][4][1]);
-    ctx.lineTo(outlines[i][5][0], outlines[i][5][1]);
-    ctx.closePath();
-    ctx.stroke();
-    // break;
+        crossPoint[key] = crossPoint[key] || [];
+        if (paths[i - 1]) {
+            crossPoint[key].push([paths[i - 1][0], paths[i - 1][1]])
+        };
+        if (paths[i + 1]) {
+            paths[i + 1] && crossPoint[key].push([paths[i + 1][0], paths[i + 1][1]]);
+        }
+    }
+
+    var cross = {};
+    // if the road is X way (two ways cross and the cross point is not on the end of each way) 
+    for (var i in crossPoint) {
+        if (crossPoint[i].length !== 4) {
+            continue;
+        }
+
+        cross[i] = cross[i] || [];
+
+        var startPoint = crossPoint[i][0];
+        var thisPoint = [Number(i.split('|')[0]), Number(i.split('|')[1])];
+        var nextPoint = crossPoint[i][2];
+        var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint, width);
+        cross[i].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
+        cross[i].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
+
+        var startPoint = crossPoint[i][0];
+        var thisPoint = [Number(i.split('|')[0]), Number(i.split('|')[1])];
+        var nextPoint = crossPoint[i][3];
+        var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint, width);
+        cross[i].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
+        cross[i].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
+    }
+
+    // deal with every cross (X,T,L);
+    var isLoop = (paths[0][0] == paths[paths.length - 1][0] && paths[0][1] == paths[paths.length - 1][1]);
+    for (var i = 0; i < paths.length; i++) {
+        if (isLoop && paths.length - 1 == i) {
+            continue;
+        }
+        // break
+        var startPoint = paths[i - 1] ? paths[i - 1] : (isLoop ? paths[paths.length - 2] : paths[i]);
+        var thisPoint = paths[i];
+        var nextPoint = paths[i + 1] ? paths[i + 1] : (isLoop ? paths[1] : paths[i]);
+
+        var key = paths[i][0] + '|' + paths[i][1];
+        if (crossPoint[key].length == 4) {
+            continue;
+        }
+        cross[key] = cross[key] || [];
+
+        var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint, width);
+
+        cross[key].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
+        cross[key].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
+    }
+
+    // get the outline path
+    var outlines = [];
+    for (var i = 0; i < paths.length - 1; i++) {
+        /*
+            v3 -------  v2
+            v4 |         | v1
+                 |         |
+            v5 -------  v6
+         */
+        var v1, v2, v3, v4, v5, v6;
+
+        var key = paths[i][0] + '|' + paths[i][1];
+        var keyNext = paths[i + 1][0] + '|' + paths[i + 1][1];
+        v1 = paths[i];
+        v4 = paths[i + 1];
+        if (cross[key].length == 4) {
+            var v1PointssortByV4 = sortPoint(v4, [cross[key][0], cross[key][1], cross[key][2], cross[key][3]]);
+            v2 = v1PointssortByV4[2]
+            v6 = v1PointssortByV4[3]
+        } else {
+            v2 = cross[key][0];
+            v6 = cross[key][1];
+        }
+
+        if (cross[keyNext].length == 4) {
+            var v4PointssortByV1 = sortPoint(v1, [cross[keyNext][0], cross[keyNext][1], cross[keyNext][2], cross[keyNext][3]]);
+            v3 = v4PointssortByV1[2]
+            v5 = v4PointssortByV1[3]
+        } else {
+            v3 = cross[keyNext][0];
+            v5 = cross[keyNext][1];
+        }
+
+        if (isCross([v3, v2], [v5, v6])) {
+            var temp = v5;
+            v5 = v3;
+            v3 = temp
+        }
+
+        let _outlines = [];
+        _outlines.push(v1, v2, v3, v4, v5, v6);
+        _outlines = _outlines.map(function(item) {
+            return item.map(function(si) {
+                return si.toFixed(2);
+            })
+        });
+        outlines.push(_outlines);
+    }
+    return outlines;
 }
 
 
-function getVectorByThreePoint(startPoint, thisPoint, nextPoint) {
+function getVectorByThreePoint(startPoint, thisPoint, nextPoint, width) {
 
     var vCToSX = startPoint ? (startPoint[0] - thisPoint[0]) : 0;
     var vCToSY = startPoint ? (startPoint[1] - thisPoint[1]) : 0;
@@ -252,7 +176,7 @@ function getVectorByThreePoint(startPoint, thisPoint, nextPoint) {
     var vCtoSCrossvCToN = vCToS[0] * vCToN[0] + vCToS[1] * vCToN[1]
     var mCToSmvCToN = Math.sqrt((vCToS[0] * vCToS[0] + vCToS[1] * vCToS[1]) * (vCToN[0] * vCToN[0] + vCToN[1] * vCToN[1]))
     var red = mCToSmvCToN == 0 ? 0 : Math.PI - Math.acos(vCtoSCrossvCToN / mCToSmvCToN);
-    // console.log('xxx')
+
     if (red === 0) {
         var k = (vCToS[1] / vCToS[0]) || (vCToN[1] / vCToN[0])
         var _red = Math.atan(k) + Math.PI / 2;
@@ -264,7 +188,6 @@ function getVectorByThreePoint(startPoint, thisPoint, nextPoint) {
             var y = (width / 2)
         }
 
-        // console.log('@@@@', _red, x, y)
         return {
             toStart: [0, 0],
             toNext: [0, 0],
@@ -476,3 +399,5 @@ function getEquationByTwoPoint(point1, point2) {
 function getDistenceByTwoPoint(point1, point2) {
     return Math.sqrt(Math.pow(point1[0] - point2[0], 2) + Math.pow(point1[1] - point2[1], 2), 2)
 }
+
+export default pathExtend;

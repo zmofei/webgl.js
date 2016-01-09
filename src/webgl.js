@@ -4,6 +4,8 @@ import Wall from './obj/wall';
 import {getWebGLContext, initShaders, createProgram, loadShader} from './tools/utility'
 import {VSHADER_SOURCE,FSHADER_SOURCE} from './shaders/default'
 
+import _pathExend from './tools/pathtowall.js';
+
 class GL {
     constructor (dom) {
         var self = this;
@@ -43,6 +45,10 @@ class GL {
         var wall = new Wall(this, obj);
         this.renderList.push(wall);
         return wall;
+    }
+
+    static pathExend(paths, width) {
+        return _pathExend(paths, width)
     }
 
 }

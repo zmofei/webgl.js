@@ -14,7 +14,49 @@
 
 <body>
     <canvas id="webgl" width="1000" height="1000"></canvas>
-    <script type="text/javascript" src="../src/tools/pathtowall.js"></script>
+    <script type="text/javascript" src="../dist/index.js"></script>
+    <script type="text/javascript">
+    var canvas = document.getElementById('webgl');
+    var ctx = canvas.getContext('2d');
+
+    var paths = [
+        [300, 300],
+        [300, 600],
+        [600, 600],
+        [600, 400],
+        [270, 400],
+    ]
+    var outlines = GL.pathExend(paths, 20);
+
+    for (var i = 0; i < outlines.length; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#f00';
+        ctx.moveTo(outlines[i][0][0], outlines[i][0][1]);
+        for (var j = 1; j < outlines[i].length; j++) {
+            if (j == 2 || j == 5) {
+                ctx.moveTo(outlines[i][j][0], outlines[i][j][1]);
+            } else {
+                ctx.lineTo(outlines[i][j][0], outlines[i][j][1]);
+            }
+        }
+        ctx.moveTo(outlines[i][5][0], outlines[i][5][1]);
+        ctx.lineTo(outlines[i][0][0], outlines[i][0][1]);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'grey';
+
+        ctx.moveTo(outlines[i][1][0], outlines[i][1][1]);
+        ctx.lineTo(outlines[i][2][0], outlines[i][2][1]);
+        ctx.moveTo(outlines[i][4][0], outlines[i][4][1]);
+        ctx.lineTo(outlines[i][5][0], outlines[i][5][1]);
+        ctx.closePath();
+        ctx.stroke();
+    }
+    </script>
 </body>
 
 </html>
