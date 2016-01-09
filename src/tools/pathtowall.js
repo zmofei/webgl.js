@@ -33,8 +33,8 @@ var paths = [
     [300, 300],
     [300, 600],
     [600, 600],
-    [600, 300],
-    [300, 300],
+    [600, 400],
+    [270, 400],
 ]
 
 
@@ -68,7 +68,7 @@ for (var i = 0; i < paths.length; i++) {
 
 
 /**
- * step 3 insert the point
+ * step 3 insert the point to the path
  */
 for (var i = newPoint.length - 1; i >= 0; i--) {
     if (newPoint[i] && newPoint[i].length >= 2) {
@@ -101,10 +101,8 @@ for (var i = 0; i < paths.length; i++) {
     }
 }
 
-
-console.log('crossPoint:', crossPoint);
 var cross = {};
-
+// if the road is X way (two ways cross and the cross point is not on the end of each way) 
 for (var i in crossPoint) {
     if (crossPoint[i].length !== 4) {
         continue;
@@ -127,11 +125,16 @@ for (var i in crossPoint) {
     cross[i].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
 }
 
+// deal with every cross (X,T,L);
+var isLoop = (paths[0][0] == paths[paths.length - 1][0] && paths[0][1] == paths[paths.length - 1][1]);
 for (var i = 0; i < paths.length; i++) {
+    if (isLoop && paths.length - 1 == i) {
+        continue;
+    }
     // break
-    var startPoint = paths[i - 1] ? paths[i - 1] : paths[i];
+    var startPoint = paths[i - 1] ? paths[i - 1] : (isLoop ? paths[paths.length - 2] : paths[i]);
     var thisPoint = paths[i];
-    var nextPoint = paths[i + 1] ? paths[i + 1] : paths[i];
+    var nextPoint = paths[i + 1] ? paths[i + 1] : (isLoop ? paths[1] : paths[i]);
 
     var key = paths[i][0] + '|' + paths[i][1];
     if (crossPoint[key].length == 4) {
@@ -140,11 +143,13 @@ for (var i = 0; i < paths.length; i++) {
     cross[key] = cross[key] || [];
 
     var vectorys = getVectorByThreePoint(startPoint, thisPoint, nextPoint);
+
     cross[key].push([thisPoint[0] + vectorys.toBisector[0], thisPoint[1] + vectorys.toBisector[1]]);
     cross[key].push([thisPoint[0] - vectorys.toBisector[0], thisPoint[1] - vectorys.toBisector[1]]);
+    console.log(i, startPoint, thisPoint, nextPoint, '????', vectorys, cross[key])
 }
 
-console.log(cross)
+console.log('cross2', cross)
 
 // get the outline path
 var outlines = [];
@@ -162,9 +167,9 @@ for (var i = 0; i < paths.length - 1; i++) {
     console.log(paths)
     v1 = paths[i];
     v4 = paths[i + 1];
-    console.log('v1', v1)
-    console.log('v4', v4)
-
+    // console.log('v2', v2)
+    // console.log('v6', v6/)
+    // console.log('@@@',cross[key])
     if (cross[key].length == 4) {
         var v1PointssortByV4 = sortPoint(v4, [cross[key][0], cross[key][1], cross[key][2], cross[key][3]]);
         v2 = v1PointssortByV4[2]
